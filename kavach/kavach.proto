@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package kavach;
+
+option go_package = "github.com/srikrsna/kavach/kavach;kavachpb";
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.MethodOptions { string assert = 2862693; }
+
+message Permission {
+  int64 level = 1;
+  repeated string resources = 2;
+}

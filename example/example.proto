@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package example;
+
+import "kavach/kavach.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/srikrsna/kavach/example;expb";
+
+service ExampleService {
+  rpc ListExamples(ListExamplesRequest) returns (ListExamplesResponse) {
+    option (kavach.assert) = "u.any(VIEWER, [r.parent+\"/examples/\"])";
+  }
+
+  rpc GetExample(GetExampleRequest) returns (Example) {
+    option (kavach.assert) = "u.any(VIEWER, [r.name])";
+  }
+
+  rpc CreateExample(CreateExampleRequest) returns (Example) {
+    option (kavach.assert) = "u.any(EDITOR, [r.parent+\"/examples/\"])";
+  }
+
+  rpc UpdateExample(UpdateExampleRequest) returns (Example) {
+    option (kavach.assert) = "u.any(EDITOR, [r.example.name])";
+  }
+
+  rpc DeleteExample(DeleteExampleRequest) returns (google.protobuf.Empty) {
+    option (kavach.assert) = "u.any(MANAGER, [r.name])";
+  }
+}
+
+message Example { string name = 1; }
+
+message ListExamplesRequest {
+  // The parent resource name, for example, "shelves/shelf1"
+  string parent = 1;
+
+  // The maximum number of items to return.
+  int32 page_size = 2;
+
+  // The next_page_token value returned from a previous List request, if any.
+  string page_token = 3;
+}
+
+message ListExamplesResponse {
+  // The field name should match the noun "example" in the method name.
+  // There will be a maximum number of items returned based on the page_size
+  // field in the request.
+  repeated Example examples = 1;
+
+  // Token to retrieve the next page of results, or empty if there are no more
+  // results in the list.
+  string next_page_token = 2;
+}
+
+message GetExampleRequest {
+  // The field will contain name of the resource requested.
+  string name = 1;
+}
+
+message CreateExampleRequest {
+  // The parent resource name where the example is to be created.
+  string parent = 1;
+
+  // The example id to use for this example.
+  string example_id = 2;
+
+  // The example resource to create.
+  // The field name should match the Noun in the method name.
+  Example example = 3;
+}
+
+message UpdateExampleRequest {
+  // The example resource which replaces the resource on the server.
+  Example example = 1;
+
+  // The update mask applies to the resource. For the `FieldMask` definition,
+  // see
+  // https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message DeleteExampleRequest {
+  // The resource name of the example to be deleted.
+  string name = 1;
+}
