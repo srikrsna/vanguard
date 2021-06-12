@@ -1,5 +1,12 @@
 package kavach
 
+const (
+	LevelOwner   = 1
+	LevelManager = 5
+	LevelEditor  = 10
+	LevelViewer  = 15
+)
+
 type Level struct {
 	Name  string
 	Value int64
