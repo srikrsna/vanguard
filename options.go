@@ -22,7 +22,8 @@ func DefaultLevels() []Level {
 }
 
 type Options struct {
-	Roles []Level
+	Roles   []Level
+	Matcher Matcher
 }
 
 type Option func(*Options)
@@ -30,5 +31,11 @@ type Option func(*Options)
 func WithRoles(rl []Level) Option {
 	return func(o *Options) {
 		o.Roles = rl
+	}
+}
+
+func WithMatcher(m Matcher) Option {
+	return func(o *Options) {
+		o.Matcher = m
 	}
 }

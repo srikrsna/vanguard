@@ -3,3 +3,6 @@ plugins:
   - name: go
     out: .
     opt: paths=source_relative
+  - name: fuzz
+    out: .
+    opt: paths=source_relative

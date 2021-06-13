@@ -24,7 +24,8 @@ func NewKavach(opts ...Option) (Kavach, error) {
 		store = Kavach{}
 		me    = MultiError{}
 		opt   = &Options{
-			Roles: DefaultLevels(),
+			Roles:   DefaultLevels(),
+			Matcher: &ExactMatcher{},
 		}
 	)
 
@@ -72,14 +73,16 @@ func NewKavach(opts ...Option) (Kavach, error) {
 		),
 	)
 
+	mf := matchFuncs{m: opt.Matcher}
+
 	funcs := cel.Functions(
 		&functions.Overload{
 			Operator: "user_any_level_resources",
-			Function: any,
+			Function: mf.any,
 		},
 		&functions.Overload{
 			Operator: "user_all_level_resources",
-			Function: all,
+			Function: mf.all,
 		},
 	)
 
@@ -161,20 +164,31 @@ func NewKavach(opts ...Option) (Kavach, error) {
 	return store, nil
 }
 
-func any(values ...ref.Val) ref.Val {
+type matchFuncs struct {
+	m Matcher
+}
+
+func (mf matchFuncs) any(values ...ref.Val) ref.Val {
 	permissions, pl, rr, err := extractTypes(values)
 	if err != nil {
 		return err
 	}
 
 	for _, perm := range permissions {
+		if perm == nil {
+			continue
+		}
+
 		if perm.Level > pl {
 			continue
 		}
 
 		for _, pr := range perm.Resources {
 			for _, cr := range rr {
-				if strings.HasPrefix(cr, pr) {
+				ok, err := mf.m.Match(pr, cr)
+				if err != nil {
+					return types.NewErr(err.Error())
+				} else if ok {
 					return types.True
 				}
 			}
@@ -184,7 +198,7 @@ func any(values ...ref.Val) ref.Val {
 	return types.False
 }
 
-func all(values ...ref.Val) ref.Val {
+func (mf matchFuncs) all(values ...ref.Val) ref.Val {
 	permissions, pl, rr, err := extractTypes(values)
 	if err != nil {
 		return err
@@ -194,12 +208,19 @@ func all(values ...ref.Val) ref.Val {
 		found := false
 	outer:
 		for _, perm := range permissions {
+			if perm == nil {
+				continue
+			}
+
 			if perm.Level > pl {
 				continue
 			}
 
 			for _, r := range perm.Resources {
-				if strings.HasPrefix(cr, r) {
+				ok, err := mf.m.Match(r, cr)
+				if err != nil {
+					return types.NewErr(err.Error())
+				} else if ok {
 					found = true
 					break outer
 				}
