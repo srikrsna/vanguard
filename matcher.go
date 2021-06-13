@@ -8,21 +8,25 @@ import (
 	"github.com/gobwas/glob"
 )
 
-type Matcher interface {
-	Match(pattern, resource string) (bool, error)
+type ResourceMatcher interface {
+	MatchResource(has, need string) (bool, error)
 }
 
-type ExactMatcher struct{}
+type LevelMatcher interface {
+	MatchLevel(has, required int64) bool
+}
 
-func (*ExactMatcher) Match(pattern, resource string) (bool, error) {
+type ExactResourceMatcher struct{}
+
+func (*ExactResourceMatcher) MatchResource(pattern, resource string) (bool, error) {
 	return pattern == resource, nil
 }
 
-type RegexMatcher struct {
+type RegexResourceMatcher struct {
 	cache sync.Map
 }
 
-func (rm *RegexMatcher) Match(pattern, resource string) (bool, error) {
+func (rm *RegexResourceMatcher) MatchResource(pattern, resource string) (bool, error) {
 	var expr *regexp.Regexp
 	v, ok := rm.cache.Load(pattern)
 	if !ok {
@@ -39,17 +43,17 @@ func (rm *RegexMatcher) Match(pattern, resource string) (bool, error) {
 	return expr.MatchString(resource), nil
 }
 
-type PrefixMatcher struct{}
+type PrefixResourceMatcher struct{}
 
-func (*PrefixMatcher) Match(prefix, resource string) (bool, error) {
+func (*PrefixResourceMatcher) MatchResource(prefix, resource string) (bool, error) {
 	return strings.HasPrefix(resource, prefix), nil
 }
 
-type GlobMatcher struct {
+type GlobResourceMMatcher struct {
 	cache sync.Map
 }
 
-func (rm *GlobMatcher) Match(pattern, resource string) (bool, error) {
+func (rm *GlobResourceMMatcher) MatchResource(pattern, resource string) (bool, error) {
 	var g glob.Glob
 	v, ok := rm.cache.Load(pattern)
 	if !ok {
@@ -64,4 +68,26 @@ func (rm *GlobMatcher) Match(pattern, resource string) (bool, error) {
 	}
 
 	return g.Match(resource), nil
+}
+
+type ExactLevelMatcher struct {
+}
+
+func (*ExactLevelMatcher) MatchLevel(has, needs int) bool {
+	return has == needs
+}
+
+type OrderedLevelMatcher struct {
+	Asc bool
+}
+
+func (o *OrderedLevelMatcher) MatchLevel(has, needs int64) bool {
+	return (o.Asc && has >= needs) || (!o.Asc && has <= needs)
+}
+
+type BitMaskLevelMatcher struct {
+}
+
+func (*BitMaskLevelMatcher) MatchLevel(has, needs int) bool {
+	return has&needs == needs
 }

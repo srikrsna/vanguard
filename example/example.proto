@@ -10,23 +10,23 @@ option go_package = "github.com/srikrsna/kavach/example;expb";
 
 service ExampleService {
   rpc ListExamples(ListExamplesRequest) returns (ListExamplesResponse) {
-    option (kavach.assert) = "u.any(VIEWER, [r.parent+\"/examples/\"])";
+    option (kavach.assert) = "u.hasAny(VIEWER, [r.parent+\"/examples/\"])";
   }
 
   rpc GetExample(GetExampleRequest) returns (Example) {
-    option (kavach.assert) = "u.any(VIEWER, [r.name])";
+    option (kavach.assert) = "u.hasAny(VIEWER, [r.name])";
   }
 
   rpc CreateExample(CreateExampleRequest) returns (Example) {
-    option (kavach.assert) = "u.any(EDITOR, [r.parent+\"/examples/\"])";
+    option (kavach.assert) = "u.hasAny(EDITOR, [r.parent+\"/examples/\"])";
   }
 
   rpc UpdateExample(UpdateExampleRequest) returns (Example) {
-    option (kavach.assert) = "u.any(EDITOR, [r.example.name])";
+    option (kavach.assert) = "u.hasAny(EDITOR, [r.example.name])";
   }
 
   rpc DeleteExample(DeleteExampleRequest) returns (google.protobuf.Empty) {
-    option (kavach.assert) = "u.any(MANAGER, [r.name])";
+    option (kavach.assert) = "u.hasAny(MANAGER, [r.name])";
   }
 }
 

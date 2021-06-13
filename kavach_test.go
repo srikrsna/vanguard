@@ -31,7 +31,11 @@ type testcase struct {
 	Method      string
 	Request     proto.Message
 	Permissions []*rlpb.Permission
-	Allow       bool
+
+	ResourceMatcher kavach.ResourceMatcher
+	LevelMatcher    kavach.LevelMatcher
+
+	Allow bool
 }
 
 func (tc *testcase) Evaluate(assert kavach.Kavach, l *zap.Logger) {
@@ -59,7 +63,9 @@ var Cases = []testcase{
 		Permissions: []*rlpb.Permission{
 			{Level: Owner, Resources: []string{"/parents/12422/examples/"}},
 		},
-		Allow: true,
+		ResourceMatcher: &kavach.ExactResourceMatcher{},
+		LevelMatcher:    &kavach.OrderedLevelMatcher{},
+		Allow:           true,
 	},
 	{
 		Name:   "Create_Inalid",
@@ -70,22 +76,27 @@ var Cases = []testcase{
 		Permissions: []*rlpb.Permission{
 			{Level: Owner, Resources: []string{"/parents/12422/examples/"}},
 		},
-		Allow: false,
+		ResourceMatcher: &kavach.ExactResourceMatcher{},
+		LevelMatcher:    &kavach.OrderedLevelMatcher{},
+		Allow:           false,
 	},
 }
 
 func TestAssertions(t *testing.T) {
 	l := zaptest.NewLogger(t, zaptest.Level(zapcore.ErrorLevel))
 	defer l.Sync()
-	assert, err := kavach.NewKavach()
-	if err != nil {
-		l.Fatal("unable to compile assertions", zap.Error(err))
-	}
 
 	for _, tc := range Cases {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
+			assert, err := kavach.NewKavach(
+				kavach.WithLevelMatcher(tc.LevelMatcher),
+				kavach.WithResourceMatcher(tc.ResourceMatcher),
+			)
+			if err != nil {
+				l.Fatal("unable to compile assertions", zap.Error(err))
+			}
 			tc.Evaluate(assert, l)
 		})
 	}
@@ -94,15 +105,19 @@ func TestAssertions(t *testing.T) {
 func BenchmarkAssertions(b *testing.B) {
 	l := zaptest.NewLogger(b, zaptest.Level(zapcore.ErrorLevel))
 	defer l.Sync()
-	assert, err := kavach.NewKavach()
-	if err != nil {
-		l.Fatal("unable to compile assertions", zap.Error(err))
-	}
 
 	b.ResetTimer()
 	for _, bc := range Cases {
 		bc := bc
 		b.Run(bc.Name, func(b *testing.B) {
+			assert, err := kavach.NewKavach(
+				kavach.WithLevelMatcher(bc.LevelMatcher),
+				kavach.WithResourceMatcher(bc.ResourceMatcher),
+			)
+			if err != nil {
+				l.Fatal("unable to compile assertions", zap.Error(err))
+			}
+			b.ResetTimer()
 			b.RunParallel(func(p *testing.PB) {
 				for p.Next() {
 					bc.Evaluate(assert, l)

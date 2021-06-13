@@ -24,8 +24,9 @@ func NewKavach(opts ...Option) (Kavach, error) {
 		store = Kavach{}
 		me    = MultiError{}
 		opt   = &Options{
-			Roles:   DefaultLevels(),
-			Matcher: &ExactMatcher{},
+			Roles:           DefaultLevels(),
+			ResourceMatcher: &ExactResourceMatcher{},
+			LevelMatcher:    &OrderedLevelMatcher{},
 		}
 	)
 
@@ -48,7 +49,7 @@ func NewKavach(opts ...Option) (Kavach, error) {
 	gds = append(gds,
 		// Functions
 		decls.NewFunction(
-			"any",
+			"hasAny",
 			decls.NewInstanceOverload(
 				"user_any_level_resources",
 				[]*exprpb.Type{
@@ -60,7 +61,7 @@ func NewKavach(opts ...Option) (Kavach, error) {
 			),
 		),
 		decls.NewFunction(
-			"all",
+			"hasAll",
 			decls.NewInstanceOverload(
 				"user_all_level_resources",
 				[]*exprpb.Type{
@@ -73,7 +74,7 @@ func NewKavach(opts ...Option) (Kavach, error) {
 		),
 	)
 
-	mf := matchFuncs{m: opt.Matcher}
+	mf := matchFuncs{rm: opt.ResourceMatcher, lm: opt.LevelMatcher}
 
 	funcs := cel.Functions(
 		&functions.Overload{
@@ -165,7 +166,8 @@ func NewKavach(opts ...Option) (Kavach, error) {
 }
 
 type matchFuncs struct {
-	m Matcher
+	rm ResourceMatcher
+	lm LevelMatcher
 }
 
 func (mf matchFuncs) any(values ...ref.Val) ref.Val {
@@ -179,13 +181,13 @@ func (mf matchFuncs) any(values ...ref.Val) ref.Val {
 			continue
 		}
 
-		if perm.Level > pl {
+		if !mf.lm.MatchLevel(perm.Level, pl) {
 			continue
 		}
 
 		for _, pr := range perm.Resources {
 			for _, cr := range rr {
-				ok, err := mf.m.Match(pr, cr)
+				ok, err := mf.rm.MatchResource(pr, cr)
 				if err != nil {
 					return types.NewErr(err.Error())
 				} else if ok {
@@ -212,12 +214,12 @@ func (mf matchFuncs) all(values ...ref.Val) ref.Val {
 				continue
 			}
 
-			if perm.Level > pl {
+			if !mf.lm.MatchLevel(perm.Level, pl) {
 				continue
 			}
 
 			for _, r := range perm.Resources {
-				ok, err := mf.m.Match(r, cr)
+				ok, err := mf.rm.MatchResource(r, cr)
 				if err != nil {
 					return types.NewErr(err.Error())
 				} else if ok {
