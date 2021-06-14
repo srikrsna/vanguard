@@ -1,5 +1,5 @@
 version: v1beta1
-name: buf.build/srikrsna/kavach
+name: buf.build/srikrsna/vanguard
 deps:
   - buf.build/beta/googleapis
 build:

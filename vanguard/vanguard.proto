@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package kavach;
+package vanguard;
 
-option go_package = "github.com/srikrsna/kavach/kavach;kavachpb";
+option go_package = "github.com/srikrsna/vanguard/vanguard;vanguardpb";
 
 import "google/protobuf/descriptor.proto";
 

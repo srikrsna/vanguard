@@ -1,4 +1,4 @@
-package kavach
+package vanguard
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/common/types/ref"
 	"github.com/google/cel-go/interpreter/functions"
-	pb "github.com/srikrsna/kavach/kavach"
+	pb "github.com/srikrsna/vanguard/vanguard"
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -17,11 +17,11 @@ import (
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
-type Kavach map[string]cel.Program
+type vanguard map[string]cel.Program
 
-func NewKavach(opts ...Option) (Kavach, error) {
+func Newvanguard(opts ...Option) (vanguard, error) {
 	var (
-		store = Kavach{}
+		store = vanguard{}
 		me    = MultiError{}
 		opt   = &Options{
 			Roles:           DefaultLevels(),
@@ -108,7 +108,7 @@ func NewKavach(opts ...Option) (Kavach, error) {
 				r := m.Input()
 				rt, err := protoregistry.GlobalTypes.FindMessageByName(r.FullName())
 				if err != nil {
-					me = append(me, fmt.Errorf("kavach: unable to find proto type: %s, err: %w", string(r.FullName()), err))
+					me = append(me, fmt.Errorf("vanguard: unable to find proto type: %s, err: %w", string(r.FullName()), err))
 					continue
 				}
 
@@ -130,24 +130,24 @@ func NewKavach(opts ...Option) (Kavach, error) {
 					),
 				)
 				if err != nil {
-					me = append(me, fmt.Errorf("kavach: unable to create cel env: %w", err))
+					me = append(me, fmt.Errorf("vanguard: unable to create cel env: %w", err))
 					continue
 				}
 
 				ast, iss := env.Compile(exp)
 				if err := iss.Err(); err != nil {
-					me = append(me, fmt.Errorf("kavach: unable to parse exp: %w", err))
+					me = append(me, fmt.Errorf("vanguard: unable to parse exp: %w", err))
 					continue
 				}
 
 				if !proto.Equal(ast.ResultType(), decls.Bool) {
-					me = append(me, fmt.Errorf("kavach: assert expression is not a bool, got: %v", ast.ResultType()))
+					me = append(me, fmt.Errorf("vanguard: assert expression is not a bool, got: %v", ast.ResultType()))
 					continue
 				}
 
 				prg, err := env.Program(ast, funcs)
 				if err != nil {
-					me = append(me, fmt.Errorf("kavach: unable to generate eval: %w", err))
+					me = append(me, fmt.Errorf("vanguard: unable to generate eval: %w", err))
 					continue
 				}
 

@@ -1,4 +1,4 @@
-package kavach
+package vanguard
 
 import (
 	"regexp"
@@ -49,16 +49,16 @@ func (*PrefixResourceMatcher) MatchResource(prefix, resource string) (bool, erro
 	return strings.HasPrefix(resource, prefix), nil
 }
 
-type GlobResourceMMatcher struct {
+type GlobResourceMatcher struct {
 	cache sync.Map
 }
 
-func (rm *GlobResourceMMatcher) MatchResource(pattern, resource string) (bool, error) {
+func (rm *GlobResourceMatcher) MatchResource(pattern, resource string) (bool, error) {
 	var g glob.Glob
 	v, ok := rm.cache.Load(pattern)
 	if !ok {
 		var err error
-		g, err := glob.Compile(pattern)
+		g, err = glob.Compile(pattern)
 		if err != nil {
 			return false, err
 		}

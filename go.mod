@@ -1,4 +1,4 @@
-module github.com/srikrsna/kavach
+module github.com/srikrsna/vanguard
 
 go 1.16
 

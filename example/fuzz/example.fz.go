@@ -5,7 +5,7 @@ package fuzz
 
 import (
 	fuzz "github.com/google/gofuzz"
-	pb "github.com/srikrsna/kavach/example"
+	pb "github.com/srikrsna/vanguard/example"
 )
 
 func FuzzExample(msg *pb.Example, c fuzz.Continue) {

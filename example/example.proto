@@ -2,31 +2,31 @@ syntax = "proto3";
 
 package example;
 
-import "kavach/kavach.proto";
+import "vanguard/vanguard.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/empty.proto";
 
-option go_package = "github.com/srikrsna/kavach/example;expb";
+option go_package = "github.com/srikrsna/vanguard/example;expb";
 
 service ExampleService {
   rpc ListExamples(ListExamplesRequest) returns (ListExamplesResponse) {
-    option (kavach.assert) = "u.hasAny(VIEWER, [r.parent+\"/examples/\"])";
+    option (vanguard.assert) = "u.hasAny(VIEWER, [r.parent+\"/examples/\"])";
   }
 
   rpc GetExample(GetExampleRequest) returns (Example) {
-    option (kavach.assert) = "u.hasAny(VIEWER, [r.name])";
+    option (vanguard.assert) = "u.hasAll(VIEWER, [r.name])";
   }
 
   rpc CreateExample(CreateExampleRequest) returns (Example) {
-    option (kavach.assert) = "u.hasAny(EDITOR, [r.parent+\"/examples/\"])";
+    option (vanguard.assert) = "u.hasAny(EDITOR, [r.parent+\"/examples/\"])";
   }
 
   rpc UpdateExample(UpdateExampleRequest) returns (Example) {
-    option (kavach.assert) = "u.hasAny(EDITOR, [r.example.name])";
+    option (vanguard.assert) = "u.hasAny(EDITOR, [r.example.name])";
   }
 
   rpc DeleteExample(DeleteExampleRequest) returns (google.protobuf.Empty) {
-    option (kavach.assert) = "u.hasAny(MANAGER, [r.name])";
+    option (vanguard.assert) = "u.hasAny(MANAGER, [r.name])";
   }
 }
 

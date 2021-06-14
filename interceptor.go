@@ -1,4 +1,4 @@
-package kavach
+package vanguard
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/google/cel-go/interpreter"
-	rlpb "github.com/srikrsna/kavach/kavach"
+	rlpb "github.com/srikrsna/vanguard/vanguard"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,7 +21,7 @@ type InterceptorOptions struct {
 	ErrorLogger ErrorLogger
 }
 
-func Interceptor(store Kavach, pf PermissionsFunc, opt *InterceptorOptions) grpc.UnaryServerInterceptor {
+func Interceptor(store vanguard, pf PermissionsFunc, opt *InterceptorOptions) grpc.UnaryServerInterceptor {
 	if opt.Skip {
 		return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 			return handler(ctx, req)
@@ -51,13 +51,13 @@ func Interceptor(store Kavach, pf PermissionsFunc, opt *InterceptorOptions) grpc
 
 		v, _, err := assert.Eval(vars)
 		if err != nil {
-			opt.ErrorLogger("kavach: unable to evaluate access assertions, most likely a bug in kavach, please open an issue: %v", err)
+			opt.ErrorLogger("vanguard: unable to evaluate access assertions, most likely a bug in vanguard, please open an issue: %v", err)
 			return nil, status.Error(codes.Unknown, "Unknow error")
 		}
 
 		allow, ok := v.Value().(bool)
 		if !ok {
-			opt.ErrorLogger("kavach: unable to evaluate access assertions to bool, most likely a bug in kavach, please open an issue: type: %[0]T, value: %[0]v", v.Value())
+			opt.ErrorLogger("vanguard: unable to evaluate access assertions to bool, most likely a bug in vanguard, please open an issue: type: %[0]T, value: %[0]v", v.Value())
 			return nil, status.Error(codes.Unknown, "Unknow error")
 		}
 
