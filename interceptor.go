@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/google/cel-go/interpreter"
-	rlpb "github.com/srikrsna/vanguard/vanguard"
+	pb "github.com/srikrsna/vanguard/vanguard"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,13 +14,19 @@ import (
 
 type ErrorLogger func(v ...interface{})
 
-type PermissionsFunc func(context.Context) ([]*rlpb.Permission, error)
+// PermissionsFunc is used to retreive the permissions of the current user.
+// The context passed is an incoming grpc context.
+//
+// If it returns an error, it will be returned to the user.
+type PermissionsFunc func(context.Context) ([]*pb.Permission, error)
 
 type InterceptorOptions struct {
 	Skip        bool
 	ErrorLogger ErrorLogger
 }
 
+// Interceptor is grpc UnaryServerInterceptor that asserts that a caller has permission to access the endpoints.
+// PermissionsFunc is used  to retreive the permissions of the current user
 func Interceptor(store Vanguard, pf PermissionsFunc, opt *InterceptorOptions) grpc.UnaryServerInterceptor {
 	if opt.Skip {
 		return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
@@ -52,13 +58,13 @@ func Interceptor(store Vanguard, pf PermissionsFunc, opt *InterceptorOptions) gr
 		v, _, err := assert.Eval(vars)
 		if err != nil {
 			opt.ErrorLogger("vanguard: unable to evaluate access assertions, most likely a bug in vanguard, please open an issue: %v", err)
-			return nil, status.Error(codes.Unknown, "Unknow error")
+			return nil, status.Error(codes.Unknown, "Unknown error")
 		}
 
 		allow, ok := v.Value().(bool)
 		if !ok {
 			opt.ErrorLogger("vanguard: unable to evaluate access assertions to bool, most likely a bug in vanguard, please open an issue: type: %[0]T, value: %[0]v", v.Value())
-			return nil, status.Error(codes.Unknown, "Unknow error")
+			return nil, status.Error(codes.Unknown, "Unknown error")
 		}
 
 		if !allow {
@@ -79,7 +85,7 @@ var _ interpreter.Activation = (*activation)(nil)
 
 type activation struct {
 	R interface{}
-	U []*rlpb.Permission
+	U []*pb.Permission
 }
 
 func (a *activation) ResolveName(name string) (interface{}, bool) {

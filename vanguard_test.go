@@ -17,7 +17,7 @@ func TestAssertions(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name(), func(t *testing.T) {
 			t.Parallel()
-			assert, err := vanguard.Newvanguard(
+			assert, err := vanguard.NewVanguard(
 				vanguard.WithLevelMatcher(tc.LevelMatcher),
 				vanguard.WithResourceMatcher(tc.ResourceMatcher),
 			)
@@ -37,7 +37,7 @@ func BenchmarkAssertions(b *testing.B) {
 	for _, bc := range Cases {
 		bc := bc
 		b.Run(bc.Name(), func(b *testing.B) {
-			assert, err := vanguard.Newvanguard(
+			assert, err := vanguard.NewVanguard(
 				vanguard.WithLevelMatcher(bc.LevelMatcher),
 				vanguard.WithResourceMatcher(bc.ResourceMatcher),
 			)

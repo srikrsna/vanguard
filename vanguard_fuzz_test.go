@@ -21,7 +21,7 @@ import (
 func FuzzEval(f *testing.F) {
 	l := zaptest.NewLogger(f, zaptest.Level(zapcore.ErrorLevel))
 	defer l.Sync()
-	assert, err := vanguard.Newvanguard()
+	assert, err := vanguard.NewVanguard()
 	if err != nil {
 		l.Fatal("unable to compile assertions", zap.Error(err))
 	}

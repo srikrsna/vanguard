@@ -17,13 +17,22 @@ import (
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
+// Vanguard holds all the compiled assert expressions against the fully qualified
+// method name.
+//
+// Example for key: /package.Service/Method
+// Look at `NewVanguard` to see how it can be created
 type Vanguard map[string]cel.Program
 
-func Newvanguard(opts ...Option) (Vanguard, error) {
+// NewVanguard reads all the proto files that are imported in the calling module and
+// compiles vanguard's assert statements.
+//
+// See Options for various ways it can be tweaked.
+func NewVanguard(opts ...option) (Vanguard, error) {
 	var (
 		store = Vanguard{}
 		me    = MultiError{}
-		opt   = &Options{
+		opt   = &options{
 			Roles:           DefaultLevels(),
 			ResourceMatcher: &ExactResourceMatcher{},
 			LevelMatcher:    &OrderedLevelMatcher{},
