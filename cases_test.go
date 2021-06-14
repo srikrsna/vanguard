@@ -37,7 +37,7 @@ type testcase struct {
 	Allow bool
 }
 
-func (tc *testcase) Evaluate(assert vanguard.vanguard, l *zap.Logger) {
+func (tc *testcase) Evaluate(assert vanguard.Vanguard, l *zap.Logger) {
 	e := assert[tc.Method]
 	res, det, err := e.Eval(map[string]interface{}{
 		"r": tc.Request,

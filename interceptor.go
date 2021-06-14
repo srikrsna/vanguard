@@ -21,7 +21,7 @@ type InterceptorOptions struct {
 	ErrorLogger ErrorLogger
 }
 
-func Interceptor(store vanguard, pf PermissionsFunc, opt *InterceptorOptions) grpc.UnaryServerInterceptor {
+func Interceptor(store Vanguard, pf PermissionsFunc, opt *InterceptorOptions) grpc.UnaryServerInterceptor {
 	if opt.Skip {
 		return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 			return handler(ctx, req)

@@ -17,11 +17,11 @@ import (
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
-type vanguard map[string]cel.Program
+type Vanguard map[string]cel.Program
 
-func Newvanguard(opts ...Option) (vanguard, error) {
+func Newvanguard(opts ...Option) (Vanguard, error) {
 	var (
-		store = vanguard{}
+		store = Vanguard{}
 		me    = MultiError{}
 		opt   = &Options{
 			Roles:           DefaultLevels(),
