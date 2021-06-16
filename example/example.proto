@@ -10,7 +10,7 @@ option go_package = "github.com/srikrsna/vanguard/example;expb";
 
 service ExampleService {
   rpc ListExamples(ListExamplesRequest) returns (ListExamplesResponse) {
-    option (vanguard.assert) = "u.hasAny(VIEWER, [r.parent+\"/examples/\"])";
+    option (vanguard.assert) = "u.hasAny(VIEWER, [r.parent+'/examples/'])";
   }
 
   rpc GetExample(GetExampleRequest) returns (Example) {
@@ -18,7 +18,7 @@ service ExampleService {
   }
 
   rpc CreateExample(CreateExampleRequest) returns (Example) {
-    option (vanguard.assert) = "u.hasAny(EDITOR, [r.parent+\"/examples/\"])";
+    option (vanguard.assert) = "u.hasAny(EDITOR, [r.parent+'/examples/'])";
   }
 
   rpc UpdateExample(UpdateExampleRequest) returns (Example) {

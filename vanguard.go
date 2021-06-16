@@ -17,6 +17,8 @@ import (
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
+type Permission = pb.Permission
+
 // Vanguard holds all the compiled assert expressions against the fully qualified
 // method name.
 //
@@ -34,7 +36,7 @@ func NewVanguard(opts ...option) (Vanguard, error) {
 		me    = MultiError{}
 		opt   = &options{
 			Roles:           DefaultLevels(),
-			ResourceMatcher: &ExactResourceMatcher{},
+			ResourceMatcher: &GlobResourceMatcher{},
 			LevelMatcher:    &OrderedLevelMatcher{},
 		}
 	)

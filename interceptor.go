@@ -18,7 +18,7 @@ type ErrorLogger func(v ...interface{})
 // The context passed is an incoming grpc context.
 //
 // If it returns an error, it will be returned to the user.
-type PermissionsFunc func(context.Context) ([]*pb.Permission, error)
+type PermissionsFunc func(context.Context) ([]*Permission, error)
 
 type InterceptorOptions struct {
 	Skip        bool
