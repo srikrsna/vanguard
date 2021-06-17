@@ -53,6 +53,8 @@ github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/srikrsna/glob v0.0.0-20210617102704-350f21d72b76 h1:WnsMydplKzhv3YDpzXGqyT2vD8pxOQGhRnOpFNVVgC0=
 github.com/srikrsna/glob v0.0.0-20210617102704-350f21d72b76/go.mod h1:U1FXcwLFw22csNVVNtS7Dz5FHnREFn+6eaD0u6HQfmw=
+github.com/srikrsna/glob v0.0.0-20210617104638-066a22b56475 h1:yxrpJ0qXGfGd0/OI/ALd0ePxYli9+4WJJsTXHNVjWS4=
+github.com/srikrsna/glob v0.0.0-20210617104638-066a22b56475/go.mod h1:U1FXcwLFw22csNVVNtS7Dz5FHnREFn+6eaD0u6HQfmw=
 github.com/srikrsna/zapproto v0.0.0-20210327123503-a48f41449f4b h1:MPhp1SdbPcovDRqUSG02U+ICZ+hIMahYDuX2Y8BReUI=
 github.com/srikrsna/zapproto v0.0.0-20210327123503-a48f41449f4b/go.mod h1:L6T/csZalFsbQvNIaKsUfrdrlkPg6Fq/tihDmUBQnEo=
 github.com/stoewer/go-strcase v1.2.0 h1:Z2iHWqGXH00XYgqDmNgQbIBxf3wrNq0F3feEy0ainaU=
