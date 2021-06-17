@@ -39,10 +39,14 @@ type testcase struct {
 
 func (tc *testcase) Evaluate(assert vanguard.Vanguard, l *zap.Logger) {
 	e := assert[tc.Method]
-	res, det, err := e.Eval(map[string]interface{}{
-		"r": tc.Request,
-		"u": tc.Permissions,
-	})
+
+	vars := vanguard.VarPool.Get()
+	defer vanguard.VarPool.Put(vars)
+
+	vars.R = tc.Request
+	vars.U = tc.Permissions
+
+	res, det, err := e.Eval(vars)
 	if err != nil {
 		l.Fatal("unable to evaluate expr", zap.Error(err), zap.Any("details", det))
 	}

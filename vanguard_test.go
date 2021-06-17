@@ -45,6 +45,7 @@ func BenchmarkAssertions(b *testing.B) {
 				l.Fatal("unable to compile assertions", zap.Error(err))
 			}
 			b.ResetTimer()
+			b.ReportAllocs()
 			b.RunParallel(func(p *testing.PB) {
 				for p.Next() {
 					bc.Evaluate(assert, l)

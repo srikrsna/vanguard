@@ -49,7 +49,7 @@ func Interceptor(store Vanguard, pf PermissionsFunc, opt *InterceptorOptions) gr
 			return nil, err
 		}
 
-		vars := varPool.Get().(*activation)
+		vars := varPool.Get()
 		defer varPool.Put(vars)
 
 		vars.R = req
@@ -75,7 +75,17 @@ func Interceptor(store Vanguard, pf PermissionsFunc, opt *InterceptorOptions) gr
 	}
 }
 
-var varPool = sync.Pool{
+type varPoolType sync.Pool
+
+func (vp *varPoolType) Get() *activation {
+	return ((*sync.Pool)(vp)).Get().(*activation)
+}
+
+func (vp *varPoolType) Put(a *activation) {
+	((*sync.Pool)(vp)).Put(a)
+}
+
+var varPool = varPoolType{
 	New: func() interface{} {
 		return new(activation)
 	},

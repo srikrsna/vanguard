@@ -231,7 +231,7 @@ func (mf matchFuncs) any(values ...ref.Val) ref.Val {
 
 		for _, pr := range perm.Resources {
 			for _, cr := range rr {
-				ok, err := mf.rm.MatchResource(pr, cr)
+				ok, err := mf.rm.MatchResource(pr, cr.Value().(string))
 				if err != nil {
 					return types.NewErr(err.Error())
 				} else if ok {
@@ -263,7 +263,7 @@ func (mf matchFuncs) all(values ...ref.Val) ref.Val {
 			}
 
 			for _, r := range perm.Resources {
-				ok, err := mf.rm.MatchResource(r, cr)
+				ok, err := mf.rm.MatchResource(r, cr.Value().(string))
 				if err != nil {
 					return types.NewErr(err.Error())
 				} else if ok {
@@ -280,7 +280,7 @@ func (mf matchFuncs) all(values ...ref.Val) ref.Val {
 	return types.True
 }
 
-func extractTypes(values []ref.Val) ([]*pb.Permission, int64, []string, ref.Val) {
+func extractTypes(values []ref.Val) ([]*pb.Permission, int64, []ref.Val, ref.Val) {
 	if len(values) != 3 {
 		return nil, -1, nil, types.NoSuchOverloadErr()
 	}
@@ -300,16 +300,7 @@ func extractTypes(values []ref.Val) ([]*pb.Permission, int64, []string, ref.Val)
 		return nil, -1, nil, types.MaybeNoSuchOverloadErr(values[2])
 	}
 
-	rr := make([]string, 0, len(vv))
-	for _, v := range vv {
-		r, ok := v.Value().(string)
-		if !ok {
-			return nil, -1, nil, types.MaybeNoSuchOverloadErr(v)
-		}
-		rr = append(rr, r)
-	}
-
-	return u, lv, rr, nil
+	return u, lv, vv, nil
 }
 
 type MultiError []error
