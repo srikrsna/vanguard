@@ -92,7 +92,7 @@ var Cases = []testcase{
 			Parent: "/parents/12422",
 		},
 		Permissions: []*pb.Permission{
-			{Level: Owner, Resources: []string{"/parents/12422/*"}},
+			{Level: Owner, Resources: []string{"/parents/12422/**"}},
 		},
 		ResourceMatcher: &vanguard.GlobResourceMatcher{},
 		LevelMatcher:    &vanguard.OrderedLevelMatcher{},

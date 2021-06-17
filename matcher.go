@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gobwas/glob"
+	"github.com/srikrsna/glob"
 )
 
 // ResourceMatcher is used to match resources.
@@ -67,26 +67,36 @@ func (*PrefixResourceMatcher) MatchResource(prefix, resource string) (bool, erro
 }
 
 // RegexResourceMatcher matches if the resource satisfies the pattern (glob)
-// It uses gobwas/glob package to compile and match globs.
+// It uses srikrsna/glob package to compile and match globs. It is documented as follows,
+// 
+// Match reports whether resource matches the shell pattern.
+// The pattern syntax is:
+//
+//	pattern:
+//		{ term }
+//	term:
+//		'*'         matches any sequence of non-/ characters
+//		'**'        matches any sequence of characters
+//		'?'         matches any single non-/ character
+//		'[' [ '!' ] { character-range } ']'
+//		            character class (must be non-empty)
+//		c           matches character c (c != '*', '?', '\\', '[')
+//		'\\' c      matches character c
+//
+//	character-range:
+//		c           matches character c (c != '\\', '-', ']')
+//		'\\' c      matches character c
+//		lo '-' hi   matches character c for lo <= c <= hi
+//
+// Match requires pattern to match all of resource, not just a substring.
+// The only possible returned error is ErrBadPattern, when pattern
+// is malformed.
+//
 type GlobResourceMatcher struct {
-	cache sync.Map
 }
 
 func (rm *GlobResourceMatcher) MatchResource(pattern, resource string) (bool, error) {
-	var g glob.Glob
-	v, ok := rm.cache.Load(pattern)
-	if !ok {
-		var err error
-		g, err = glob.Compile(pattern)
-		if err != nil {
-			return false, err
-		}
-		rm.cache.Store(pattern, g)
-	} else {
-		g = v.(glob.Glob)
-	}
-
-	return g.Match(resource), nil
+	return glob.Match(pattern, resource)
 }
 
 // ExactLevelMatcher matches if both the levels are exactly equal

@@ -115,7 +115,7 @@ List of supported strategies are,
 * Exact
 * Prefix
 * Regex
-* [Glob](https://pkg.go.dev/github.com/gobwas/glob) (**Default**)
+* [Glob](https://pkg.go.dev/github.com/srikrsna/glob) (**Default**)
 
 ## Assertion options
 

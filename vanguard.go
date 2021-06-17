@@ -1,6 +1,7 @@
 package vanguard
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -14,7 +15,6 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"
-	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 type Permission = pb.Permission
@@ -98,6 +98,14 @@ func NewVanguard(opts ...option) (Vanguard, error) {
 		},
 	)
 
+	type result struct {
+		Err  error
+		Prg  cel.Program
+		Name string
+	}
+	results := make(chan *result)
+	count := 0
+
 	protoregistry.GlobalFiles.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
 		services := fd.Services()
 		for i := 0; i < services.Len(); i++ {
@@ -105,75 +113,100 @@ func NewVanguard(opts ...option) (Vanguard, error) {
 			methods := s.Methods()
 			for j := 0; j < methods.Len(); j++ {
 				m := methods.Get(j)
-				if m.IsStreamingClient() {
-					continue
-				}
-
-				exp := proto.GetExtension(m.Options().(*descriptorpb.MethodOptions), pb.E_Assert).(string)
-				if exp == "" {
-					continue
-				}
-
-				fmn := "/" + string(s.FullName()) + "/" + string(m.Name())
-
-				r := m.Input()
-				rt, err := protoregistry.GlobalTypes.FindMessageByName(r.FullName())
-				if err != nil {
-					me = append(me, fmt.Errorf("vanguard: unable to find proto type: %s, err: %w", string(r.FullName()), err))
-					continue
-				}
-
-				env, err := cel.NewEnv(
-					cel.Types(
-						(*pb.Permission)(nil),
-					),
-					cel.Types(
-						rt.New().Interface(),
-					),
-					cel.Declarations(
-						gds...,
-					),
-					cel.Declarations(
-						decls.NewVar(
-							"r",
-							decls.NewObjectType(string(r.FullName())),
-						),
-					),
-				)
-				if err != nil {
-					me = append(me, fmt.Errorf("vanguard: unable to create cel env: %w", err))
-					continue
-				}
-
-				ast, iss := env.Compile(exp)
-				if err := iss.Err(); err != nil {
-					me = append(me, fmt.Errorf("vanguard: unable to parse exp: %w", err))
-					continue
-				}
-
-				if !proto.Equal(ast.ResultType(), decls.Bool) {
-					me = append(me, fmt.Errorf("vanguard: assert expression is not a bool, got: %v", ast.ResultType()))
-					continue
-				}
-
-				prg, err := env.Program(ast, funcs)
-				if err != nil {
-					me = append(me, fmt.Errorf("vanguard: unable to generate eval: %w", err))
-					continue
-				}
-
-				store[fmn] = prg
+				count++
+				go func() {
+					prg, err := compile(s, m, gds, funcs)
+					results <- &result{
+						Prg:  prg,
+						Name: "/" + string(s.FullName()) + "/" + string(m.Name()),
+						Err:  err,
+					}
+				}()
 			}
 		}
 
 		return true
 	})
 
+	for i := 0; i < count; i++ {
+		res := <-results
+		if res.Err != nil {
+			if res.Err == errSkip {
+				continue
+			}
+			me = append(me, res.Err)
+			continue
+		}
+
+		store[res.Name] = res.Prg
+	}
+
 	if len(me) > 0 {
 		return nil, me
 	}
 
 	return store, nil
+}
+
+var errSkip = errors.New("skip error")
+
+func compile(
+	s protoreflect.ServiceDescriptor,
+	m protoreflect.MethodDescriptor,
+	gds []*exprpb.Decl,
+	funcs ...cel.ProgramOption,
+) (cel.Program, error) {
+	if m.IsStreamingClient() {
+		return nil, errSkip
+	}
+
+	exp := proto.GetExtension(m.Options(), pb.E_Assert).(string)
+	if exp == "" {
+		return nil, errSkip
+	}
+
+	r := m.Input()
+	rt, err := protoregistry.GlobalTypes.FindMessageByName(r.FullName())
+	if err != nil {
+		return nil, fmt.Errorf("vanguard: unable to find proto type: %s, err: %w", string(r.FullName()), err)
+	}
+
+	env, err := cel.NewEnv(
+		cel.Types(
+			(*pb.Permission)(nil),
+		),
+		cel.Types(
+			rt.New().Interface(),
+		),
+		cel.Declarations(
+			gds...,
+		),
+		cel.Declarations(
+			decls.NewVar(
+				"r",
+				decls.NewObjectType(string(r.FullName())),
+			),
+		),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("vanguard: unable to create cel env: %w", err)
+	}
+
+	ast, iss := env.Compile(exp)
+	if err := iss.Err(); err != nil {
+		return nil, fmt.Errorf("vanguard: unable to parse exp: %w", err)
+	}
+
+	if !proto.Equal(ast.ResultType(), decls.Bool) {
+		return nil, fmt.Errorf("vanguard: assert expression is not a bool, got: %v", ast.ResultType())
+	}
+
+	prg, err := env.Program(ast, funcs...)
+	if err != nil {
+		return nil, fmt.Errorf("vanguard: unable to generate eval: %w", err)
+	}
+
+	return prg, nil
 }
 
 type matchFuncs struct {
