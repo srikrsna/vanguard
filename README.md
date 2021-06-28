@@ -172,4 +172,4 @@ In this case, the roles would have,
 
 Naturally these roles need to be stored somewhere (database). The pattern can be constructed on demand or can also be stored against each time roles are assigned/removed against a user.
 
-For any use case that you are having a problem with achieving or general suggestions to improve the package, please open an issue.
+For any use case that you are having a problem with achieving or general suggestions to improve the package, please open an discussion thread.
