@@ -1,13 +1,13 @@
 # Vanguard
 [![Go Report Card](https://goreportcard.com/badge/github.com/srikrsna/vanguard)](https://goreportcard.com/report/github.com/srikrsna/vanguard) [![Go Reference](https://pkg.go.dev/badge/github.com/srikrsna/vanguard.svg)](https://pkg.go.dev/github.com/srikrsna/vanguard) ![Tests](https://github.com/srikrsna/vanguard/actions/workflows/go.yml/badge.svg)
 
-Package vanguard provides configurable access control mechanism for gRPC endpoints in Go. Although the same can be applied to any request/response model like the OpenAPI, as of now it only has support for gRPC. It is designed to solve for Restful API architectures. But it can be used pretty much everywhere the concepts hold.
+Package vanguard provides configurable access control mechanism for gRPC endpoints in Go. Although the same can be applied to any request/response model like the OpenAPI, as of now it only supports gRPC. It is designed to solve for Restful API architectures. But it can be used pretty much anywhere the concepts hold.
 
 ## Concept 
-On a high level, it typical for api calls to have the following,
+On a high level, it is typical for api calls to have the following,
 
 * The one requesting for something to happen - Subject/Client/User
-* The something that needs to happen - Action/Task/Method/RPC - 
+* The something that needs to happen - Action/Task/Method/RPC 
 * The one on which the something is happening - Resource/Object/Entity
 
 For sake of brevity I'll start referring to them as follows from now on,
@@ -41,7 +41,7 @@ message GetPageRequest {
 // omitted for brevity
 ```
 
-Okay! so you may have noticed that we are defining an rpc option `(vanguard.assert) = '...'`. Specifying this option at method level tells vanguard to only allow access to this if this assertion holds true.
+Okay! so you may have noticed that we are defining an rpc option `(vanguard.assert) = '...'`. Specifying this option tells vanguard to only allow access if this assertion holds true.
 
 Let's take the assertion for the get method and dig deeper: `u.hasAny(VIEWER, [r.id])`
 
@@ -56,7 +56,7 @@ In addition to this it also provides certain functions/methods. For example the 
 
 So in summary the `u.hasAny(VIEWER, [r.id])` translates to: Allow if the user has Viewer level access to the requested resource.
 
-Thanks to the power of cel these expressions can be as complex as one needs them to be. The only requirement is that the expression must always resolve to a boolean expression. (Don't worry this is type checked ahead of time by vanguard)
+Thanks to the power of cel, these expressions can be as complex as one needs them to be. The only requirement is that the expression must always resolve to a boolean expression. (Don't worry this is type checked ahead of time by vanguard)
 
 Now in our code while somewhere at the beginning of the program,
 
@@ -94,9 +94,9 @@ The interceptor needs a way to acquire the permissions of the current user. It r
 
 If you look at the get example again, we are only asking for a Viewer level on the resources. Naturally a user with Owner privileges on the resource should also be able to perform the action. One way to go about it is to assign Viewer and other levels whenever Owner is assigned. This way it is guaranteed that an Owner will always have the lower level privileges.
 
-This approach may be straight forward but doesn't scale very well. Instead vanguard provides matching strategies for matching levels with the default being a ordered strategy. Remember that I said these access levels are just an alias for plain old int64? This can be used to order and the levels in ascending and descending fashion. In addition to this Vanguard also offers bit mask based matching strategies.
+This approach may be straight forward but doesn't scale very well. Instead vanguard provides matching strategies for matching levels with the default being a ordered strategy. Remember that I said these access levels are just an alias for plain old int64? This can be used to order the levels in ascending or descending order. In addition to this Vanguard also offers bit mask based matching strategies.
 
-The same reasoning is valid for matching resources. Let's understand this with and example. Imagine a simple CRUD API for books and pages. Each page belongs to exactly one book. So each page can be identified using something like 'books/1242/pages/76'.
+The same reasoning is valid for matching resources. Let's understand this with an example. Imagine a simple CRUD API for books and pages. Each page belongs to exactly one book. So each page can be identified using something like 'books/1242/pages/76'.
 
 It becomes impractical to give access to all the pages to a particular user. Instead in this case we can again change the matching strategy for resources to something like a glob based matching strategy. Then in the books example a user would be given access to book and it pages with 'books/1242/pages/*'. This would mean the user has access to all the pages of a book.
 
@@ -142,7 +142,7 @@ The package deliberately avoids providing a mechanism to store access levels aga
 
 ## RBAC (Role based access control)
 
-Let's continue the books example. To summarize, books have pages. Now we decided to have RBAC and decided to have the following roles,
+Let's continue the books example. To summarize, books have pages. Now for RBAC we decided to have the following roles,
 
 * Book Owner
 * Book Reader
